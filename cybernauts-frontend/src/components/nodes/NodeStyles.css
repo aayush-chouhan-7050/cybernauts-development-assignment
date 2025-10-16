@@ -1,0 +1,20 @@
+/* src/components/nodes/NodeStyles.css */
+.react-flow-node {
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid #555;
+  color: white;
+  text-align: center;
+  min-width: 120px;
+  transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+}
+
+.high-score {
+  background: #2a9d8f;
+  border-color: #264653;
+}
+
+.low-score {
+  background: #e76f51;
+  border-color: #f4a261;
+}
