@@ -12,8 +12,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_URL = process.env.DB_URL;
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN_URL;
 
-app.use(cors());
+// CORS options
+const corsOptions = {
+  origin: FRONTEND_ORIGIN
+};
 
 // Middleware to parse JSON bodies
 app.use(express.json());
