@@ -2,16 +2,20 @@
 import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../app/store';
-import { createUser } from '../features/graph/graphSlice'; // We'll create this next
+import { createUser } from '../features/graph/graphSlice';
+import { useDebounce } from '../hooks/useDebounce';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { nodes } = useSelector((state: RootState) => state.graph); // Get nodes from state
+  const { nodes } = useSelector((state: RootState) => state.graph);
   const [username, setUsername] = useState('');
   const [age, setAge] = useState('');
   const [hobbies, setHobbies] = useState('');
   const [hobbySearch, setHobbySearch] = useState('');
+  
+  // Use debounce for hobby search to optimize performance
+  const debouncedSearch = useDebounce(hobbySearch, 300);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +23,7 @@ const Sidebar = () => {
         alert('Username and age are required.');
         return;
     }
-    const hobbiesArray = hobbies.split(',').map(h => h.trim()).filter(h => h);
+    const hobbiesArray = hobbies.split(',').map(h => h.trim().toLowerCase()).filter(h => h);
     dispatch(createUser({ username, age: Number(age), hobbies: hobbiesArray }));
 
     // Reset form
@@ -29,23 +33,25 @@ const Sidebar = () => {
   };
 
   const allHobbies = useMemo(() => {
-  const hobbySet = new Set<string>();
-  nodes.forEach(node => {
-    node.data.hobbies.forEach(hobby => {
-      const cleanedHobby = hobby.trim().toLowerCase(); // Sanitize the hobby
-      if (cleanedHobby) { // Ensure it's not an empty string
-        hobbySet.add(cleanedHobby);
-      }
+    const hobbySet = new Set<string>();
+    nodes.forEach(node => {
+      node.data.hobbies.forEach(hobby => {
+        const cleanedHobby = hobby.trim().toLowerCase();
+        if (cleanedHobby) {
+          hobbySet.add(cleanedHobby);
+        }
+      });
     });
-  });
-  return Array.from(hobbySet);
+    return Array.from(hobbySet).sort();
   }, [nodes]);
 
-  const filteredHobbies = allHobbies.filter(hobby => 
-    hobby.toLowerCase().includes(hobbySearch.toLowerCase())
+  // Use debounced search value for filtering
+  const filteredHobbies = useMemo(() => 
+    allHobbies.filter(hobby => 
+      hobby.toLowerCase().includes(debouncedSearch.toLowerCase())
+    ), [allHobbies, debouncedSearch]
   );
 
-  // Drag handler for hobbies
   const onDragStart = (event: React.DragEvent, hobby: string) => {
     event.dataTransfer.setData('application/reactflow', hobby);
     event.dataTransfer.effectAllowed = 'move';
@@ -68,6 +74,8 @@ const Sidebar = () => {
           value={age}
           onChange={(e) => setAge(e.target.value)}
           required
+          min="1"
+          max="150"
         />
         <input
           type="text"
@@ -77,28 +85,33 @@ const Sidebar = () => {
         />
         <button type="submit">Create User</button>
       </form>
-    {/* --- Draggable Hobbies Section --- */}
+      
       <div className="hobbies-section">
-        <h3>Hobbies</h3>
-        {/* Search Input */}
+        <h3>Hobbies ({filteredHobbies.length})</h3>
         <input
           type="text"
           placeholder="Search hobbies..."
-          className="hobby-search" // Add a class for styling
+          className="hobby-search"
           value={hobbySearch}
           onChange={(e) => setHobbySearch(e.target.value)}
         />
         <div className="hobbies-list">
-          {filteredHobbies.map((hobby) => (
-            <div
-              key={hobby}
-              className="hobby-item"
-              onDragStart={(event) => onDragStart(event, hobby)}
-              draggable
-            >
-              {hobby}
-            </div>
-          ))}
+          {filteredHobbies.length > 0 ? (
+            filteredHobbies.map((hobby) => (
+              <div
+                key={hobby}
+                className="hobby-item"
+                onDragStart={(event) => onDragStart(event, hobby)}
+                draggable
+              >
+                {hobby}
+              </div>
+            ))
+          ) : (
+            <p style={{ fontSize: '0.9em', color: '#999', marginTop: '10px' }}>
+              {hobbySearch ? 'No hobbies found' : 'No hobbies yet'}
+            </p>
+          )}
         </div>
       </div>
     </aside>
