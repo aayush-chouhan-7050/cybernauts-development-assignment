@@ -1,4 +1,4 @@
-// src/index.ts
+// src/index.ts - Updated with pagination routes
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -9,7 +9,6 @@ import { handleGetGraphData } from './controllers/user.controller';
 import cluster from 'cluster';
 import os from 'os';
 
-// Load environment variables
 dotenv.config();
 
 const numCPUs = os.cpus().length;
@@ -17,7 +16,6 @@ const numCPUs = os.cpus().length;
 if (cluster.isPrimary) {
   console.log(`Primary ${process.pid} is running`);
 
-  // Fork workers.
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }
@@ -31,26 +29,24 @@ if (cluster.isPrimary) {
   const DB_URL = process.env.DB_URL;
   const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN_URL;
 
-  // CORS options
   const corsOptions: CorsOptions = {
     origin: FRONTEND_ORIGIN,
   };
 
   app.use(cors(corsOptions));
-
-  // Middleware to parse JSON bodies
   app.use(express.json());
 
   // API Routes
   app.use('/api/users', userRoutes);
+  
+  // Graph endpoint with pagination support
   app.get('/api/graph', handleGetGraphData);
 
-  // Basic route for health check
+  // Health check
   app.get('/', (req, res) => {
     res.send('API is running...');
   });
 
-  // Connect to MongoDB and start the server
   if (!DB_URL) {
     console.error('Error: DB_URL is not defined in the .env file');
     process.exit(1);

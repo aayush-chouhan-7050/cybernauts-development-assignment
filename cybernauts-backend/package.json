@@ -4,11 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "nodemon src/index.ts",
-  "test": "jest",
-  "build": "tsc",
-  "start": "node dist/index.js"
- },
+    "dev": "nodemon src/index.ts",
+    "test": "jest",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "seed": "ts-node src/scripts/seedData.ts",
+    "seed:small": "cross-env NUM_USERS=50 ts-node src/scripts/seedData.ts",
+    "seed:medium": "cross-env NUM_USERS=200 ts-node src/scripts/seedData.ts",
+    "seed:large": "cross-env NUM_USERS=500 ts-node src/scripts/seedData.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -27,6 +31,7 @@
     "@types/node": "^24.7.2",
     "@types/supertest": "^6.0.3",
     "@types/uuid": "^10.0.0",
+    "cross-env": "^7.0.3",
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.4",

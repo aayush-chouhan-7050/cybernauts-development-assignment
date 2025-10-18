@@ -1,15 +1,20 @@
-// src/routes/user.routes.ts
+// src/routes/user.routes.ts - Add pagination routes
 import { Router } from 'express';
 import * as userController from '../controllers/user.controller';
 
 const router = Router();
 
-router.post('/', userController.handleCreateUser);      // POST /api/users
-router.get('/', userController.handleGetAllUsers);      // GET /api/users
-router.put('/:id', userController.handleUpdateUser);    // PUT /api/users/:id
-router.delete('/:id', userController.handleDeleteUser); // DELETE /api/users/:id
+// routes
+router.post('/', userController.handleCreateUser);
+router.get('/', userController.handleGetAllUsers);
+router.put('/:id', userController.handleUpdateUser);
+router.delete('/:id', userController.handleDeleteUser);
 
-router.post('/:id/link', userController.handleLinkUsers); // POST /api/users/:id/link 
-router.delete('/:id/unlink', userController.handleUnlinkUsers); // DELETE /api/users/:id/unlink
+router.post('/:id/link', userController.handleLinkUsers);
+router.delete('/:id/unlink', userController.handleUnlinkUsers);
+
+// Pagination routes
+router.get('/paginated/list', userController.handleGetPaginatedUsers);
+router.get('/stats/overview', userController.handleGetUserStats);
 
 export default router;

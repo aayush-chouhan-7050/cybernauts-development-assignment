@@ -1,11 +1,12 @@
-// src/components/NetworkGraph.tsx
-import { useEffect, useCallback } from 'react';
+// src/components/NetworkGraph.tsx - Add lazy loading and virtualization
+import { useEffect, useCallback, useState, useRef } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
   Background,
   applyNodeChanges,
-} from 'reactflow'; // Import applyNodeChanges
+  Panel,
+} from 'reactflow';
 import type { Connection, Node, Edge, NodeChange } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useSelector, useDispatch } from 'react-redux';
@@ -19,10 +20,14 @@ import {
   nodesChanged,
   setSelectedNodeId,
   updateUserPosition,
+  loadMoreGraphData,
+  toggleLazyLoad,
 } from '../features/graph/graphSlice';
 import HighScoreNode from './nodes/HighScoreNode';
 import LowScoreNode from './nodes/LowScoreNode';
+import './NetworkGraph.css';
 
+// Define nodeTypes outside component to prevent re-creation on each render
 const nodeTypes = {
   highScoreNode: HighScoreNode,
   lowScoreNode: LowScoreNode,
@@ -30,17 +35,45 @@ const nodeTypes = {
 
 const NetworkGraph = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { nodes, edges, status } = useSelector(
+  const { nodes, edges, status, pagination, isLazyLoadEnabled } = useSelector(
     (state: RootState) => state.graph.present
   );
+  
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (status === 'idle') {
-      dispatch(fetchGraphData());
+      dispatch(fetchGraphData({ page: 1, limit: 100 }));
     }
   }, [status, dispatch]);
 
-  // Handler for connecting nodes by dragging
+  // Infinite scroll handler
+  useEffect(() => {
+    if (!isLazyLoadEnabled) return;
+
+    const handleScroll = async () => {
+      const viewport = viewportRef.current;
+      if (!viewport || isLoadingMore || !pagination.hasMore) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = viewport;
+      const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+
+      // Load more when scrolled 80% down
+      if (scrollPercentage > 0.8) {
+        setIsLoadingMore(true);
+        await dispatch(loadMoreGraphData());
+        setIsLoadingMore(false);
+      }
+    };
+
+    const viewport = viewportRef.current;
+    if (viewport) {
+      viewport.addEventListener('scroll', handleScroll);
+      return () => viewport.removeEventListener('scroll', handleScroll);
+    }
+  }, [isLazyLoadEnabled, isLoadingMore, pagination.hasMore, dispatch]);
+
   const handleConnect = useCallback(
     (params: Connection) => {
       if (params.source && params.target) {
@@ -60,8 +93,6 @@ const NetworkGraph = () => {
       event.preventDefault();
 
       const droppedHobby = event.dataTransfer.getData('application/reactflow');
-      // reactFlowInstance is not available here, so we find the node manually.
-      // This logic finds the node element under the cursor.
       const targetNodeElement = (event.target as Element).closest(
         '.react-flow__node'
       );
@@ -86,7 +117,6 @@ const NetworkGraph = () => {
 
   const onNodesDelete = useCallback(
     (deletedNodes: Node[]) => {
-      // Show a confirmation dialog
       const isConfirmed = window.confirm(
         `Are you sure you want to delete ${deletedNodes.length} user(s)? This cannot be undone.`
       );
@@ -135,12 +165,28 @@ const NetworkGraph = () => {
     [dispatch]
   );
 
+  const handleToggleLazyLoad = useCallback(() => {
+    dispatch(toggleLazyLoad(!isLazyLoadEnabled));
+  }, [dispatch, isLazyLoadEnabled]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (!pagination.hasMore || isLoadingMore) return;
+    setIsLoadingMore(true);
+    await dispatch(loadMoreGraphData());
+    setIsLoadingMore(false);
+  }, [dispatch, pagination.hasMore, isLoadingMore]);
+
   if (status === 'loading' && nodes.length === 0) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading network graph...</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ height: '100vh', width: '100vw' }}>
+    <div style={{ height: '100vh', width: '100vw' }} ref={viewportRef}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -157,6 +203,45 @@ const NetworkGraph = () => {
         <MiniMap />
         <Controls />
         <Background />
+        
+        <Panel position="top-right" className="graph-controls-panel">
+          <div className="graph-info">
+            <strong>Users:</strong> {nodes.length} / {pagination.total}
+            {pagination.hasMore && (
+              <span className="more-indicator"> (+{pagination.total - nodes.length} more)</span>
+            )}
+          </div>
+          
+          <div className="lazy-load-toggle">
+            <label>
+              <input
+                type="checkbox"
+                checked={isLazyLoadEnabled}
+                onChange={handleToggleLazyLoad}
+              />
+              <span>Lazy Loading</span>
+            </label>
+          </div>
+          
+          {isLazyLoadEnabled && pagination.hasMore && (
+            <button 
+              className="load-more-btn"
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+            >
+              {isLoadingMore ? 'Loading...' : `Load More (${pagination.totalPages - pagination.page} pages)`}
+            </button>
+          )}
+        </Panel>
+        
+        {isLoadingMore && (
+          <Panel position="bottom-center">
+            <div className="loading-indicator">
+              <div className="small-spinner"></div>
+              <span>Loading more users...</span>
+            </div>
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );
