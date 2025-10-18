@@ -10,17 +10,17 @@ A full-stack application for managing user relationships and hobbies with dynami
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Running the Application](#running-the-application)
-- [Running Tests](#running-tests)
-- [API Documentation](#api-documentation)
-- [Project Structure](#project-structure)
-- [Bonus Features](#bonus-features)
-- [Deployment](#deployment)
-- [Demo](#demo)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Running the Application](#-running-the-application)
+- [Running Tests](#-running-tests)
+- [API Documentation](#-api-documentation)
+- [Project Structure](#-project-structure)
+- [Bonus Features](#-bonus-features)
+- [Deployment](#-deployment)
+- [Demo](#-demo)
 
 ## ✨ Features
 
