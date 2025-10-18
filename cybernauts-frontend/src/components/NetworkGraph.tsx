@@ -1,23 +1,22 @@
 // src/components/NetworkGraph.tsx
-import { useEffect, useMemo, useCallback } from 'react';
-import ReactFlow, { MiniMap, Controls, Background } from 'reactflow'; // Add Connection
-import type { Connection, Node, Edge } from 'reactflow';
+import { useEffect, useCallback } from 'react';
+import ReactFlow, { MiniMap, Controls, Background, applyNodeChanges } from 'reactflow'; // Import applyNodeChanges
+import type { Connection, Node, Edge, NodeChange } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../app/store';
-import { fetchGraphData, linkUsers, updateUserHobbies, deleteUser, unlinkUsers } from '../features/graph/graphSlice'; // Import linkUsers
-import HighScoreNode from './nodes/HighScoreNode'; // Import custom nodes
+import { fetchGraphData, linkUsers, updateUserHobbies, deleteUser, unlinkUsers, nodesChanged } from '../features/graph/graphSlice';
+import HighScoreNode from './nodes/HighScoreNode';
 import LowScoreNode from './nodes/LowScoreNode';
+
+const nodeTypes = {
+  highScoreNode: HighScoreNode,
+  lowScoreNode: LowScoreNode,
+};
 
 const NetworkGraph = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { nodes, edges, status } = useSelector((state: RootState) => state.graph);
-
-  // Define node types for React Flow [cite: 94-95]
-  const nodeTypes = useMemo(() => ({
-      highScoreNode: HighScoreNode,
-      lowScoreNode: LowScoreNode,
-  }), []);
+  const { nodes, edges, status } = useSelector((state: RootState) => state.graph.present);
 
   useEffect(() => {
     if (status === 'idle') {
@@ -78,6 +77,14 @@ const NetworkGraph = () => {
   });
   }, [dispatch]);
 
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      const newNodes = applyNodeChanges(changes, nodes);
+      dispatch(nodesChanged(newNodes));
+    },
+    [dispatch, nodes]
+  );
+
   if (status === 'loading' && nodes.length === 0) {
     return <div>Loading...</div>;
   }
@@ -88,9 +95,10 @@ const NetworkGraph = () => {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
         onConnect={handleConnect}
-        onNodesDelete={onNodesDelete} // Handle node deletion
-        onDrop={onDrop}               // Handle drop event
+        onNodesDelete={onNodesDelete}
+        onDrop={onDrop}               
         onDragOver={onDragOver} 
         onEdgesDelete={onEdgesDelete}     
         fitView

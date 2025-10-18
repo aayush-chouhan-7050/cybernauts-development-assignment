@@ -1,6 +1,7 @@
 // src/features/graph/graphSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import type { Node, Edge } from 'reactflow';
 import apiClient from '../../services/api';
 import { toast } from 'react-toastify';
 
@@ -10,16 +11,6 @@ interface NodeData {
   age: number;
   hobbies: string[];
   popularityScore: number;
-}
-interface Node {
-  id: string;
-  data: NodeData;
-  position: { x: number; y: number };
-}
-interface Edge {
-  id: string;
-  source: string;
-  target: string;
 }
 interface GraphState {
   nodes: Node[];
@@ -74,9 +65,8 @@ export const unlinkUsers = createAsyncThunk(
 export const updateUserHobbies = createAsyncThunk(
   'graph/updateHobbies',
   async ({ userId, hobbies }: { userId: string; hobbies: string[] }, { dispatch }) => {
-    // We use a PUT request to update the user's data
     await apiClient.put(`/users/${userId}`, { hobbies });
-    dispatch(fetchGraphData()); // Refetch all data to get updated scores
+    dispatch(fetchGraphData());
   }
 );
 
@@ -94,7 +84,6 @@ export const deleteUser = createAsyncThunk(
       } else {
         toast.error("Failed to delete user.");
       }
-      // We throw the error to prevent the promise from being fulfilled
       throw error;
     }
   }
@@ -103,13 +92,17 @@ export const deleteUser = createAsyncThunk(
 const graphSlice = createSlice({
   name: 'graph',
   initialState,
-  reducers: {},
+  reducers: {
+    nodesChanged(state, action: PayloadAction<Node[]>) {
+      state.nodes = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchGraphData.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(fetchGraphData.fulfilled, (state, action: PayloadAction<{ nodes: Node[], edges: Edge[] }>) => {
+      .addCase(fetchGraphData.fulfilled, (state, action: PayloadAction<{ nodes: Node<NodeData>[], edges: Edge[] }>) => {
         state.status = 'succeeded';
         state.nodes = action.payload.nodes;
         state.edges = action.payload.edges;
@@ -138,5 +131,7 @@ const graphSlice = createSlice({
       });
   },
 });
+
+export const { nodesChanged } = graphSlice.actions;
 
 export default graphSlice.reducer;

@@ -146,6 +146,27 @@
   cursor: grabbing;
 }
 
+.history-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.history-controls button {
+  width: 48%;
+  padding: 8px;
+  background-color: #4a4a4a;
+}
+
+.history-controls button:hover:not(:disabled) {
+  background-color: #5a5a5a;
+}
+
+.history-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 90vw;

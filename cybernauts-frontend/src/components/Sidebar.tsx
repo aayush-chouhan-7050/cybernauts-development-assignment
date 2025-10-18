@@ -4,11 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../app/store';
 import { createUser } from '../features/graph/graphSlice';
 import { useDebounce } from '../hooks/useDebounce';
+import { ActionCreators as UndoActionCreators } from 'redux-undo';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { nodes } = useSelector((state: RootState) => state.graph);
+  const { nodes } = useSelector((state: RootState) => state.graph.present); // Update selector
+  const canUndo = useSelector((state: RootState) => state.graph.past.length > 0);
+  const canRedo = useSelector((state: RootState) => state.graph.future.length > 0);
   const [username, setUsername] = useState('');
   const [age, setAge] = useState('');
   const [hobbies, setHobbies] = useState('');
@@ -35,7 +38,7 @@ const Sidebar = () => {
   const allHobbies = useMemo(() => {
     const hobbySet = new Set<string>();
     nodes.forEach(node => {
-      node.data.hobbies.forEach(hobby => {
+      node.data.hobbies.forEach((hobby: string) => {
         const cleanedHobby = hobby.trim().toLowerCase();
         if (cleanedHobby) {
           hobbySet.add(cleanedHobby);
@@ -57,8 +60,20 @@ const Sidebar = () => {
     event.dataTransfer.effectAllowed = 'move';
   };
 
+  const handleUndo = () => {
+    dispatch(UndoActionCreators.undo());
+  };
+
+  const handleRedo = () => {
+    dispatch(UndoActionCreators.redo());
+  };
+
   return (
     <aside className="sidebar">
+      <div className="history-controls">
+        <button onClick={handleUndo} disabled={!canUndo}>Undo</button>
+        <button onClick={handleRedo} disabled={!canRedo}>Redo</button>
+      </div>
       <h2>User Management</h2>
       <form onSubmit={handleSubmit} className="user-form">
         <input
