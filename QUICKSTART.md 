@@ -2,7 +2,23 @@
 
 Get up and running in 5 minutes!
 
-## Prerequisites
+## 🌐 Live Demo
+
+**Try it now without any setup!**
+
+- **Frontend**: https://cybernauts-development-assignment.vercel.app/
+- **Backend API**: https://cybernauts-backend-qujq.onrender.com/api
+
+The application is fully deployed and operational. You can:
+- Create and manage users
+- Link users as friends
+- Drag hobbies onto nodes
+- See real-time popularity scores
+- Test all features live!
+
+---
+
+## Prerequisites (For Local Development)
 - Node.js 18+ installed
 - MongoDB Atlas account (free tier)
 - Git installed
@@ -39,6 +55,7 @@ Edit `.env`:
 ```env
 PORT=3001
 DB_URL=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/cybernauts?retryWrites=true&w=majority
+FRONTEND_ORIGIN_URL=http://localhost:5173/
 ```
 
 **Get your MongoDB URL:**
@@ -263,45 +280,6 @@ src/
 
 ---
 
-## 💡 Pro Tips
-
-1. **Keep MongoDB Atlas Free:**
-   - Free tier gives 512MB storage
-   - Perfect for development
-   - Clusters pause after inactivity (auto-resumes)
-
-2. **Development Workflow:**
-   - Keep both terminals visible
-   - Use browser DevTools → Network tab to debug API calls
-   - Check backend terminal for API logs
-   - Use Redux DevTools extension
-
-3. **Testing:**
-   - Run tests before committing: `npm test`
-   - Check test coverage
-   - Add new tests for new features
-
-4. **Git Workflow:**
-   ```bash
-   # Create feature branch
-   git checkout -b feature/your-feature
-   
-   # Commit changes
-   git add .
-   git commit -m "Add: your feature description"
-   
-   # Push to GitHub
-   git push origin feature/your-feature
-   ```
-
-5. **Code Quality:**
-   - Run ESLint: `npm run lint`
-   - Format code consistently
-   - Remove console.logs before committing
-   - Use TypeScript types (avoid `any`)
-
----
-
 ## 📦 What's Included
 
 ### Backend Features ✅
@@ -337,6 +315,36 @@ src/
 
 ---
 
-## ✨ You're All Set!
+## 🆘 Need Help?
 
-The application is now running locally. Time to explore, test, and deploy!
+1. **Check the logs:**
+   - Backend: Look at terminal output
+   - Frontend: Check browser console
+   - Database: MongoDB Atlas logs
+
+2. **Common issues:**
+   - See troubleshooting section above
+   - Check `.env` files are correct
+   - Verify MongoDB connection
+   - Ensure both servers are running
+
+3. **Documentation:**
+   - [README.md](./README.md) - Full setup
+   - [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - API reference
+   - [DEPLOYMENT.md](./DEPLOYMENT.md) - Deploy guide
+
+4. **Test API directly:**
+   ```bash
+   # Test backend health
+   curl http://localhost:3001/
+   
+   # Test getting users
+   curl http://localhost:3001/api/users
+   
+   # Test creating user
+   curl -X POST http://localhost:3001/api/users \
+     -H "Content-Type: application/json" \
+     -d '{"username":"Test","age":25,"hobbies":["testing"]}'
+   ```
+
+---

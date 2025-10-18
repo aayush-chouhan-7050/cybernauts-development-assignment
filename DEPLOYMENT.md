@@ -1,154 +1,176 @@
 # Deployment Guide
 
-This guide will walk you through deploying your full-stack application to production.
+This guide documents the successful deployment of the full-stack application.
+
+## 🎉 Live Deployment
+
+### Production URLs
+- **Frontend Application**: https://cybernauts-development-assignment.vercel.app/
+- **Backend API**: https://cybernauts-backend-qujq.onrender.com/
+- **API Health Check**: https://cybernauts-backend-qujq.onrender.com/
+
+### Deployment Summary
+- ✅ Backend deployed on Render
+- ✅ Frontend deployed on Vercel
+- ✅ MongoDB Atlas database connected
+- ✅ All environment variables configured
+- ✅ CORS properly configured
+- ✅ All endpoints working in production
+
+---
 
 ## Table of Contents
-- [Backend Deployment (Railway)](#backend-deployment-railway)
+- [Backend Deployment (Render)](#backend-deployment-render)
 - [Frontend Deployment (Vercel)](#frontend-deployment-vercel)
-- [Alternative: Backend on Render](#alternative-backend-on-render)
-- [Alternative: Frontend on Netlify](#alternative-frontend-on-netlify)
-- [Environment Variables](#environment-variables)
+- [Alternative Platforms](#alternative-platforms)
 - [Testing Deployment](#testing-deployment)
 - [Troubleshooting](#troubleshooting)
 
 ---
 
-## Backend Deployment (Railway)
+## Backend Deployment (Render)
 
-### Prerequisites
-- GitHub account
-- Railway account (sign up at [railway.app](https://railway.app))
-- MongoDB Atlas database
+### Completed Deployment
 
-### Steps
+**Live URL**: https://cybernauts-backend-qujq.onrender.com
 
-#### 1. Push Code to GitHub
-```bash
-cd cybernauts-backend
-git init
-git add .
-git commit -m "Initial backend commit"
-git branch -M main
-git remote add origin https://github.com/yourusername/cybernauts-backend.git
-git push -u origin main
-```
+The backend has been successfully deployed with the following configuration:
 
-#### 2. Create MongoDB Atlas Database
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a free cluster (if you haven't already)
-3. Go to Database Access → Add New Database User
-4. Create a user with password
-5. Go to Network Access → Add IP Address → Allow Access from Anywhere (0.0.0.0/0)
-6. Go to Database → Connect → Connect your application
-7. Copy the connection string
+#### Configuration Used:
+- **Platform**: Render
+- **Repository**: Connected to GitHub
+- **Build Command**: `npm install`
+- **Start Command**: `npm start` or `node dist/index.js`
+- **Environment**: Node.js
+- **Instance Type**: Free tier
 
-#### 3. Deploy on Railway
-
-1. Go to [Railway Dashboard](https://railway.app/dashboard)
-2. Click **New Project** → **Deploy from GitHub repo**
-3. Select your `cybernauts-backend` repository
-4. Railway will automatically detect it's a Node.js app
-
-#### 4. Configure Environment Variables
-
-In Railway project settings:
-
-1. Click on your service
-2. Go to **Variables** tab
-3. Add these variables:
-
+#### Environment Variables Set:
 ```
 PORT=3001
-DB_URL=mongodb+srv://username:password@cluster.mongodb.net/cybernauts?retryWrites=true&w=majority
+DB_URL=mongodb+srv://[username]:[password]@[cluster].mongodb.net/cybernauts?retryWrites=true&w=majority
+FRONTEND_ORIGIN_URL=https://cybernauts-development-assignment.vercel.app
 ```
 
-#### 5. Configure Build Settings (if needed)
+#### Deployment Steps Followed:
 
-Railway usually auto-detects, but if needed:
+1. **Pushed code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Prepare for deployment"
+   git push origin main
+   ```
 
-**Build Command:**
-```bash
-npm install && npm run build
-```
+2. **Created Render Web Service**
+   - Logged into [Render Dashboard](https://dashboard.render.com/)
+   - Clicked **New** → **Web Service**
+   - Connected GitHub repository
+   - Selected `cybernauts-backend` folder
 
-**Start Command:**
-```bash
-npm start
-```
+3. **Configured Build Settings**
+   - Name: `cybernauts-backend`
+   - Environment: Node
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Instance Type: Free
 
-#### 6. Get Your Backend URL
+4. **Added Environment Variables**
+   - `PORT=3001`
+   - `DB_URL=[MongoDB connection string]`
+   - `FRONTEND_ORIGIN_URL=[Frontend URL]`
 
-After deployment completes:
-1. Go to **Settings** tab
-2. Under **Domains**, click **Generate Domain**
-3. Copy your URL (e.g., `https://your-app.railway.app`)
-4. Save this URL for frontend configuration
+5. **Deployed**
+   - Clicked **Create Web Service**
+   - Waited for build to complete (~5 minutes)
+   - Verified deployment at: https://cybernauts-backend-qujq.onrender.com
+
+#### Verification:
+✅ API Health Check: https://cybernauts-backend-qujq.onrender.com/  
+✅ Get Users: https://cybernauts-backend-qujq.onrender.com/api/users  
+✅ Get Graph: https://cybernauts-backend-qujq.onrender.com/api/graph
+
+### For Your Own Deployment (Replication Steps)
 
 ---
 
 ## Frontend Deployment (Vercel)
 
-### Prerequisites
-- GitHub account
-- Vercel account (sign up at [vercel.com](https://vercel.com))
+### Completed Deployment
 
-### Steps
+**Live URL**: https://cybernauts-development-assignment.vercel.app/
 
-#### 1. Update Frontend API URL
+The frontend has been successfully deployed with the following configuration:
 
-Before deploying, update your API client to use environment variable:
+#### Configuration Used:
+- **Platform**: Vercel
+- **Repository**: Connected to GitHub
+- **Framework**: Vite
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Install Command**: `npm install`
 
-```typescript
-// src/services/api.ts
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
-});
+#### Environment Variable Set:
+```
+VITE_API_URL=https://cybernauts-backend-qujq.onrender.com/api
 ```
 
-#### 2. Push Code to GitHub
+#### Deployment Steps Followed:
 
-```bash
-cd cybernauts-frontend
-git init
-git add .
-git commit -m "Initial frontend commit"
-git branch -M main
-git remote add origin https://github.com/yourusername/cybernauts-frontend.git
-git push -u origin main
-```
+1. **Updated API Client**
+   ```typescript
+   // src/services/api.ts
+   const apiClient = axios.create({
+     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+   });
+   ```
 
-#### 3. Deploy on Vercel
+2. **Pushed code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Configure for production deployment"
+   git push origin main
+   ```
 
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click **Add New** → **Project**
-3. Import your `cybernauts-frontend` repository
-4. Configure project:
-   - **Framework Preset:** Vite
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-   - **Install Command:** `npm install`
+3. **Created Vercel Project**
+   - Logged into [Vercel Dashboard](https://vercel.com/dashboard)
+   - Clicked **Add New** → **Project**
+   - Imported `cybernauts-frontend` repository from GitHub
 
-#### 4. Add Environment Variable
+4. **Configured Project Settings**
+   - **Framework Preset**: Vite (auto-detected)
+   - **Root Directory**: `cybernauts-frontend` (or leave as is)
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+   - **Install Command**: `npm install`
 
-In Vercel project settings:
+5. **Added Environment Variable**
+   - Went to **Settings** → **Environment Variables**
+   - Added:
+     - **Name**: `VITE_API_URL`
+     - **Value**: `https://cybernauts-backend-qujq.onrender.com/api`
+     - **Environment**: Production, Preview, Development (all selected)
 
-1. Go to **Settings** → **Environment Variables**
-2. Add:
-   - **Name:** `VITE_API_URL`
-   - **Value:** `https://your-backend.railway.app/api` (your Railway URL)
-   - **Environment:** Production, Preview, Development (select all)
+6. **Deployed**
+   - Clicked **Deploy**
+   - Waited for build (~2 minutes)
+   - Verified at: https://cybernauts-development-assignment.vercel.app/
 
-#### 5. Deploy
+#### Verification:
+✅ Frontend loads successfully  
+✅ Can create users  
+✅ Can link/unlink users  
+✅ Graph visualizes correctly  
+✅ No CORS errors  
+✅ All API calls work
 
-1. Click **Deploy**
-2. Wait for build to complete
-3. Visit your deployed site URL
+### For Your Own Deployment (Replication Steps)
 
 ---
 
-## Alternative: Backend on Render
+## Alternative Platforms
 
-### Steps
+### Alternative: Railway (Backend)
+
+If you prefer Railway over Render:
 
 1. Go to [Render Dashboard](https://dashboard.render.com/)
 2. Click **New** → **Web Service**
@@ -189,48 +211,58 @@ In Vercel project settings:
 
 ---
 
-## Environment Variables
-
-### Backend (Railway/Render)
-
-| Variable | Value | Description |
-|----------|-------|-------------|
-| PORT | 3001 | Server port |
-| DB_URL | mongodb+srv://... | MongoDB connection string |
-
-### Frontend (Vercel/Netlify)
-
-| Variable | Value | Description |
-|----------|-------|-------------|
-| VITE_API_URL | https://your-backend.railway.app/api | Backend API URL |
-
----
-
 ## Testing Deployment
 
 ### 1. Test Backend API
 
 ```bash
 # Test health check
-curl https://your-backend.railway.app/
+curl https://cybernauts-backend-qujq.onrender.com/
 
 # Test getting users
-curl https://your-backend.railway.app/api/users
+curl https://cybernauts-backend-qujq.onrender.com/api/users
 
 # Test creating user
-curl -X POST https://your-backend.railway.app/api/users \
+curl -X POST https://cybernauts-backend-qujq.onrender.com/api/users \
   -H "Content-Type: application/json" \
   -d '{"username":"TestUser","age":25,"hobbies":["testing"]}'
+
+# Test graph endpoint
+curl https://cybernauts-backend-qujq.onrender.com/api/graph
 ```
 
 ### 2. Test Frontend
 
-1. Visit your Vercel URL
+1. Visit: https://cybernauts-development-assignment.vercel.app/
 2. Open browser DevTools → Network tab
-3. Check if API calls are going to correct backend URL
+3. Verify API calls go to: `https://cybernauts-backend-qujq.onrender.com/api`
 4. Try creating a user
 5. Try linking users
 6. Test all features
+
+### 3. End-to-End Testing
+
+Complete user flow on production:
+
+1. ✅ Create user "Alice" (age 25, hobbies: coding, music)
+2. ✅ Create user "Bob" (age 30, hobbies: coding, sports)
+3. ✅ Link Alice and Bob by dragging nodes
+4. ✅ Drag "art" hobby onto Bob's node
+5. ✅ Verify popularity scores update
+6. ✅ Try to delete Alice (should fail with 409)
+7. ✅ Delete edge between Alice and Bob
+8. ✅ Delete Alice (should succeed)
+
+### 4. Performance Check
+
+**Backend Response Times:**
+- Health check: ~200ms (first request may be slower due to Render cold start)
+- API endpoints: ~300-500ms
+- Note: Render free tier has ~1-2 minute cold start after inactivity
+
+**Frontend Load Time:**
+- Initial load: ~1-2 seconds
+- Vercel CDN: Fast worldwide delivery
 
 ---
 
@@ -295,18 +327,20 @@ curl -X POST https://your-backend.railway.app/api/users \
 
 ## Post-Deployment Checklist
 
-- [ ] Backend is accessible at public URL
-- [ ] Frontend is accessible at public URL
-- [ ] Can create users via frontend
-- [ ] Can link/unlink users
-- [ ] Can drag hobbies onto nodes
-- [ ] Toast notifications work
-- [ ] Graph visualizes correctly
-- [ ] Delete protection works (409 error)
-- [ ] All API endpoints respond correctly
-- [ ] CORS is properly configured
-- [ ] Environment variables are set
-- [ ] Database connection is stable
+- [x] Backend is accessible at https://cybernauts-backend-qujq.onrender.com
+- [x] Frontend is accessible at https://cybernauts-development-assignment.vercel.app/
+- [x] Can create users via frontend
+- [x] Can link/unlink users
+- [x] Can drag hobbies onto nodes
+- [x] Toast notifications work
+- [x] Graph visualizes correctly
+- [x] Delete protection works (409 error)
+- [x] All API endpoints respond correctly
+- [x] CORS is properly configured
+- [x] Environment variables are set
+- [x] Database connection is stable
+
+**Status**: ✅ **Fully Deployed and Operational**
 
 ---
 
@@ -358,27 +392,6 @@ curl -X POST https://your-backend.railway.app/api/users \
 
 ---
 
-## Cost Estimation
-
-### Free Tier Limits:
-
-**Railway:**
-- $5 credit per month
-- 500 hours execution time
-- 512 MB RAM per service
-
-**Vercel:**
-- 100 GB bandwidth per month
-- Unlimited deployments
-
-**MongoDB Atlas:**
-- 512 MB storage
-- Shared cluster
-
-**Total Cost:** FREE for small-scale usage
-
----
-
 ## Support
 
 If you encounter issues during deployment:
@@ -389,6 +402,5 @@ If you encounter issues during deployment:
 4. Check browser console for frontend errors
 5. Review MongoDB Atlas connection
 6. Consult platform-specific documentation:
-   - [Railway Docs](https://docs.railway.app/)
    - [Vercel Docs](https://vercel.com/docs)
    - [MongoDB Atlas Docs](https://docs.atlas.mongodb.com/)

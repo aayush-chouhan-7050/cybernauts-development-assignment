@@ -4,8 +4,12 @@
 
 ```
 Development: http://localhost:3001/api
-Production: https://your-backend-url.railway.app/api
+Production: https://cybernauts-backend-qujq.onrender.com/api
 ```
+
+**Live API Endpoint:** https://cybernauts-backend-qujq.onrender.com/api
+
+**Health Check:** https://cybernauts-backend-qujq.onrender.com/
 
 ## Authentication
 
@@ -447,43 +451,44 @@ CORS is enabled for all origins in development. For production, configure allowe
 
 **1. Create two users**
 ```bash
-curl -X POST http://localhost:3001/api/users \
+# Using production API
+curl -X POST https://cybernauts-backend-qujq.onrender.com/api/users \
   -H "Content-Type: application/json" \
   -d '{"username":"Alice","age":25,"hobbies":["coding","music"]}'
 
-curl -X POST http://localhost:3001/api/users \
+curl -X POST https://cybernauts-backend-qujq.onrender.com/api/users \
   -H "Content-Type: application/json" \
   -d '{"username":"Bob","age":30,"hobbies":["coding","sports"]}'
 ```
 
 **2. Link them as friends**
 ```bash
-curl -X POST http://localhost:3001/api/users/ALICE_ID/link \
+curl -X POST https://cybernauts-backend-qujq.onrender.com/api/users/ALICE_ID/link \
   -H "Content-Type: application/json" \
   -d '{"friendId":"BOB_ID"}'
 ```
 
 **3. Get graph data**
 ```bash
-curl http://localhost:3001/api/graph
+curl https://cybernauts-backend-qujq.onrender.com/api/graph
 ```
 
 **4. Try to delete Alice (will fail)**
 ```bash
-curl -X DELETE http://localhost:3001/api/users/ALICE_ID
+curl -X DELETE https://cybernauts-backend-qujq.onrender.com/api/users/ALICE_ID
 # Response: 409 Conflict
 ```
 
 **5. Unlink users first**
 ```bash
-curl -X DELETE http://localhost:3001/api/users/ALICE_ID/unlink \
+curl -X DELETE https://cybernauts-backend-qujq.onrender.com/api/users/ALICE_ID/unlink \
   -H "Content-Type: application/json" \
   -d '{"friendId":"BOB_ID"}'
 ```
 
 **6. Now delete Alice (will succeed)**
 ```bash
-curl -X DELETE http://localhost:3001/api/users/ALICE_ID
+curl -X DELETE https://cybernauts-backend-qujq.onrender.com/api/users/ALICE_ID
 # Response: 200 OK
 ```
 

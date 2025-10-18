@@ -73,7 +73,7 @@ Before running this project, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/aayush-chouhan-7050/cybernauts-development-assignment.git
+git clone https://github.com/yourusername/cybernauts-assignment.git
 cd cybernauts-assignment
 ```
 
@@ -97,6 +97,7 @@ cp .env.example .env
 ```env
 PORT=3001
 DB_URL=mongodb+srv://username:password@cluster.mongodb.net/cybernauts?retryWrites=true&w=majority
+FRONTEND_ORIGIN_URL=https://cybernauts-development-assignment.vercel.app
 ```
 
 ### 3. Frontend Setup
@@ -316,34 +317,42 @@ cybernauts-assignment/
 
 ## 🌐 Deployment
 
-### Backend (Railway/Render)
+### Backend (Render)
 
-1. Push code to GitHub
-2. Create new project on Railway/Render
-3. Connect GitHub repository
-4. Add environment variables:
+**Deployed at:** https://cybernauts-backend-qujq.onrender.com
+
+Deployment steps:
+1. Pushed code to GitHub
+2. Created new Web Service on Render
+3. Connected GitHub repository
+4. Configured environment variables:
    - `PORT=3001`
-   - `DB_URL=your_mongodb_connection_string`
-5. Deploy
+   - `DB_URL=mongodb+srv://...`
+   - `FRONTEND_ORIGIN_URL=https://cy..`
+5. Deployed successfully
 
-### Frontend (Vercel/Netlify)
+### Frontend (Vercel)
 
-1. Push code to GitHub
-2. Create new project on Vercel/Netlify
+**Deployed at:** https://cybernauts-development-assignment.vercel.app/
+
+Deployment steps:
+1. Pushed code to GitHub
+2. Created new project on Vercel
 3. Set build command: `npm run build`
 4. Set output directory: `dist`
-5. Add environment variable:
-   - `VITE_API_URL=your_backend_url/api`
-6. Deploy
+5. Configured environment variable:
+   - `VITE_API_URL=https://cybernauts-backend-qujq.onrender.com/api`
+6. Deployed successfully
 
 ## 🎥 Demo
 
 ### Live Demo
-- **Frontend**: [Your Vercel URL]
-- **Backend API**: [Your Railway URL]
+- **Frontend**: https://cybernauts-development-assignment.vercel.app/
+- **Backend API**: https://cybernauts-backend-qujq.onrender.com/api
+- **API Health Check**: https://cybernauts-backend-qujq.onrender.com/
 
 ### Screen Recording
-[Link to your demo video]
+[Link to your demo video - Upload and add here]
 
 ### Demo Features
 1. Creating users with hobbies
@@ -372,12 +381,16 @@ popularityScore = numberOfFriends + (sharedHobbiesWithAllFriends × 0.5)
 3. **No Self-Links**: Users cannot link to themselves
 4. **Dynamic Scoring**: Scores recalculate when hobbies or friendships change
 
+## 🤝 Contributing
+
+This is a development assignment.
+
 ## 📄 License
 
 This project is part of a development assignment for Cybernauts.
 
 ## 👥 Author
 
-[Aayush Chouhan]
+*Aayush Chouhan*
 - GitHub: [@aayush-chouhan-7050]
 - Email: aayushchouhan7050@gmail.com
