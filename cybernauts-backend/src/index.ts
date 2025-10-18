@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { CorsOptions } from 'cors';
 import userRoutes from './routes/user.routes';
 import { handleGetGraphData } from './controllers/user.controller';
 
@@ -15,8 +16,22 @@ const DB_URL = process.env.DB_URL;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN_URL;
 
 // CORS options
-const corsOptions = {
-  origin: FRONTEND_ORIGIN
+const allowedOrigins = [
+  FRONTEND_ORIGIN, 
+  /https:\/\/cybernauts-development-assignment-.*\.vercel\.app$/ // Regex for Vercel preview URLs
+];
+
+const corsOptions: CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.some(o => o instanceof RegExp ? o.test(origin) : o === origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 };
 
 app.use(cors(corsOptions));
