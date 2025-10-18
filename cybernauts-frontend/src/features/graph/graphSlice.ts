@@ -17,12 +17,14 @@ interface GraphState {
   edges: Edge[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
+  selectedNodeId: string | null;
 }
 const initialState: GraphState = {
   nodes: [],
   edges: [],
   status: 'idle',
   error: null,
+  selectedNodeId: null,
 };
 
 // Async thunk to fetch graph data from the backend
@@ -33,15 +35,35 @@ export const fetchGraphData = createAsyncThunk('graph/fetchData', async () => {
 
 export const createUser = createAsyncThunk(
   'graph/createUser',
-  async (userData: { username: string; age: number; hobbies: string[] }, { dispatch }) => {
+  async (
+    userData: { username: string; age: number; hobbies: string[] },
+    { dispatch }
+  ) => {
     await apiClient.post('/users', userData);
     dispatch(fetchGraphData()); // Refetch data after creation
   }
 );
 
+export const updateUser = createAsyncThunk(
+  'graph/updateUser',
+  async (
+    {
+      id,
+      ...userData
+    }: { id: string; username?: string; age?: number; hobbies?: string[] },
+    { dispatch }
+  ) => {
+    await apiClient.put(`/users/${id}`, userData);
+    dispatch(fetchGraphData()); // Refetch data after update
+  }
+);
+
 export const linkUsers = createAsyncThunk(
   'graph/linkUsers',
-  async ({ source, target }: { source: string; target: string }, { dispatch }) => {
+  async (
+    { source, target }: { source: string; target: string },
+    { dispatch }
+  ) => {
     await apiClient.post(`/users/${source}/link`, { friendId: target });
     dispatch(fetchGraphData()); // Refetch data after linking
   }
@@ -49,14 +71,19 @@ export const linkUsers = createAsyncThunk(
 
 export const unlinkUsers = createAsyncThunk(
   'graph/unlinkUsers',
-  async ({ source, target }: { source: string; target: string }, { dispatch }) => {
+  async (
+    { source, target }: { source: string; target: string },
+    { dispatch }
+  ) => {
     try {
       // Call the unlink endpoint for the source user
-      await apiClient.delete(`/users/${source}/unlink`, { data: { friendId: target } });
+      await apiClient.delete(`/users/${source}/unlink`, {
+        data: { friendId: target },
+      });
       dispatch(fetchGraphData()); // Refetch to update graph
-      toast.warn("Users unlinked!");
+      toast.warn('Users unlinked!');
     } catch (error) {
-      toast.error("Failed to unlink users.");
+      toast.error('Failed to unlink users.');
       throw error;
     }
   }
@@ -64,9 +91,19 @@ export const unlinkUsers = createAsyncThunk(
 
 export const updateUserHobbies = createAsyncThunk(
   'graph/updateHobbies',
-  async ({ userId, hobbies }: { userId: string; hobbies: string[] }, { dispatch }) => {
+  async (
+    { userId, hobbies }: { userId: string; hobbies: string[] },
+    { dispatch }
+  ) => {
     await apiClient.put(`/users/${userId}`, { hobbies });
     dispatch(fetchGraphData());
+  }
+);
+
+export const updateUserPosition = createAsyncThunk(
+  'graph/updateUserPosition',
+  async ({ id, position }: { id: string; position: { x: number; y: number } }) => {
+    await apiClient.put(`/users/${id}`, { position });
   }
 );
 
@@ -76,13 +113,13 @@ export const deleteUser = createAsyncThunk(
     try {
       await apiClient.delete(`/users/${userId}`);
       dispatch(fetchGraphData()); // Refetch to remove the node
-      toast.success("User deleted successfully!");
+      toast.success('User deleted successfully!');
     } catch (error: any) {
       // The backend sends a 409 error with a specific message
       if (error.response && error.response.status === 409) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Failed to delete user.");
+        toast.error('Failed to delete user.');
       }
       throw error;
     }
@@ -96,42 +133,57 @@ const graphSlice = createSlice({
     nodesChanged(state, action: PayloadAction<Node[]>) {
       state.nodes = action.payload;
     },
+    setSelectedNodeId(state, action: PayloadAction<string | null>) {
+      state.selectedNodeId = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchGraphData.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(fetchGraphData.fulfilled, (state, action: PayloadAction<{ nodes: Node<NodeData>[], edges: Edge[] }>) => {
-        state.status = 'succeeded';
-        state.nodes = action.payload.nodes;
-        state.edges = action.payload.edges;
-      })
+      .addCase(
+        fetchGraphData.fulfilled,
+        (
+          state,
+          action: PayloadAction<{ nodes: Node<NodeData>[]; edges: Edge[] }>
+        ) => {
+          state.status = 'succeeded';
+          state.nodes = action.payload.nodes;
+          state.edges = action.payload.edges;
+        }
+      )
       .addCase(fetchGraphData.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Failed to fetch data';
       })
       .addCase(createUser.fulfilled, () => {
-        toast.success("User created successfully!");
+        toast.success('User created successfully!');
       })
       .addCase(createUser.rejected, () => {
-        toast.error("Failed to create user.");
+        toast.error('Failed to create user.');
+      })
+      .addCase(updateUser.fulfilled, () => {
+        toast.success('User updated successfully!');
+      })
+      .addCase(updateUser.rejected, () => {
+        toast.error('Failed to update user.');
       })
       .addCase(linkUsers.fulfilled, () => {
-        toast.success("Users linked!");
+        toast.success('Users linked!');
       })
       .addCase(linkUsers.rejected, () => {
-        toast.error("Failed to link users.");
+        toast.error('Failed to link users.');
       })
       .addCase(updateUserHobbies.fulfilled, () => {
-      toast.info("Hobbies updated, scores recalculated!");
+        toast.info('Hobbies updated, scores recalculated!');
       })
       .addCase(updateUserHobbies.rejected, () => {
-        toast.error("Failed to update hobbies.");
+        toast.error('Failed to update hobbies.');
       });
   },
 });
 
-export const { nodesChanged } = graphSlice.actions;
+export const { nodesChanged, setSelectedNodeId } = graphSlice.actions;
 
 export default graphSlice.reducer;

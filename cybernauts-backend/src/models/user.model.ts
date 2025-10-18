@@ -10,6 +10,7 @@ export interface IUser {
   hobbies: string[];
   friends: string[];
   createdAt: Date;
+  position: { x: number; y: number };
 }
 
 // Define the Mongoose Schema
@@ -28,7 +29,7 @@ const userSchema = new Schema<IUser>({
     required: true,
   },
   hobbies: {
-    type: [String], 
+    type: [String],
     required: true,
     default: [],
   },
@@ -39,6 +40,10 @@ const userSchema = new Schema<IUser>({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  position: {
+    x: { type: Number, default: 0 },
+    y: { type: Number, default: 0 },
   },
 });
 

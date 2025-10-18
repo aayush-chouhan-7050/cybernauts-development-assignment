@@ -1,43 +1,87 @@
 // src/components/Sidebar.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../app/store';
-import { createUser } from '../features/graph/graphSlice';
+import {
+  createUser,
+  updateUser,
+  setSelectedNodeId,
+} from '../features/graph/graphSlice';
 import { useDebounce } from '../hooks/useDebounce';
 import { ActionCreators as UndoActionCreators } from 'redux-undo';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { nodes } = useSelector((state: RootState) => state.graph.present); // Update selector
+  const { nodes, selectedNodeId } = useSelector(
+    (state: RootState) => state.graph.present
+  ); // Update selector
   const canUndo = useSelector((state: RootState) => state.graph.past.length > 0);
-  const canRedo = useSelector((state: RootState) => state.graph.future.length > 0);
+  const canRedo = useSelector(
+    (state: RootState) => state.graph.future.length > 0
+  );
   const [username, setUsername] = useState('');
   const [age, setAge] = useState('');
   const [hobbies, setHobbies] = useState('');
   const [hobbySearch, setHobbySearch] = useState('');
-  
+
+  const isEditMode = useMemo(() => !!selectedNodeId, [selectedNodeId]);
+
+  useEffect(() => {
+    if (selectedNodeId) {
+      const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+      if (selectedNode) {
+        setUsername(selectedNode.data.label);
+        setAge(String(selectedNode.data.age));
+        setHobbies(selectedNode.data.hobbies.join(', '));
+      }
+    } else {
+      setUsername('');
+      setAge('');
+      setHobbies('');
+    }
+  }, [selectedNodeId, nodes]);
+
   // Use debounce for hobby search to optimize performance
   const debouncedSearch = useDebounce(hobbySearch, 300);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !age) {
-        alert('Username and age are required.');
-        return;
+      alert('Username and age are required.');
+      return;
     }
-    const hobbiesArray = hobbies.split(',').map(h => h.trim().toLowerCase()).filter(h => h);
-    dispatch(createUser({ username, age: Number(age), hobbies: hobbiesArray }));
+    const hobbiesArray = hobbies
+      .split(',')
+      .map((h) => h.trim().toLowerCase())
+      .filter((h) => h);
+
+    if (isEditMode) {
+      dispatch(
+        updateUser({
+          id: selectedNodeId!,
+          username,
+          age: Number(age),
+          hobbies: hobbiesArray,
+        })
+      );
+    } else {
+      dispatch(
+        createUser({ username, age: Number(age), hobbies: hobbiesArray })
+      );
+    }
 
     // Reset form
-    setUsername('');
-    setAge('');
-    setHobbies('');
+    if (!isEditMode) {
+      setUsername('');
+      setAge('');
+      setHobbies('');
+    }
   };
 
   const allHobbies = useMemo(() => {
     const hobbySet = new Set<string>();
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.data.hobbies.forEach((hobby: string) => {
         const cleanedHobby = hobby.trim().toLowerCase();
         if (cleanedHobby) {
@@ -49,10 +93,12 @@ const Sidebar = () => {
   }, [nodes]);
 
   // Use debounced search value for filtering
-  const filteredHobbies = useMemo(() => 
-    allHobbies.filter(hobby => 
-      hobby.toLowerCase().includes(debouncedSearch.toLowerCase())
-    ), [allHobbies, debouncedSearch]
+  const filteredHobbies = useMemo(
+    () =>
+      allHobbies.filter((hobby) =>
+        hobby.toLowerCase().includes(debouncedSearch.toLowerCase())
+      ),
+    [allHobbies, debouncedSearch]
   );
 
   const onDragStart = (event: React.DragEvent, hobby: string) => {
@@ -68,13 +114,21 @@ const Sidebar = () => {
     dispatch(UndoActionCreators.redo());
   };
 
+  const handleCancelEdit = () => {
+    dispatch(setSelectedNodeId(null));
+  };
+
   return (
     <aside className="sidebar">
       <div className="history-controls">
-        <button onClick={handleUndo} disabled={!canUndo}>Undo</button>
-        <button onClick={handleRedo} disabled={!canRedo}>Redo</button>
+        <button onClick={handleUndo} disabled={!canUndo}>
+          Undo
+        </button>
+        <button onClick={handleRedo} disabled={!canRedo}>
+          Redo
+        </button>
       </div>
-      <h2>User Management</h2>
+      <h2>{isEditMode ? 'Edit User' : 'User Management'}</h2>
       <form onSubmit={handleSubmit} className="user-form">
         <input
           type="text"
@@ -98,9 +152,14 @@ const Sidebar = () => {
           value={hobbies}
           onChange={(e) => setHobbies(e.target.value)}
         />
-        <button type="submit">Create User</button>
+        <button type="submit">{isEditMode ? 'Update User' : 'Create User'}</button>
+        {isEditMode && (
+          <button type="button" onClick={handleCancelEdit}>
+            Cancel Edit
+          </button>
+        )}
       </form>
-      
+
       <div className="hobbies-section">
         <h3>Hobbies ({filteredHobbies.length})</h3>
         <input
@@ -123,7 +182,13 @@ const Sidebar = () => {
               </div>
             ))
           ) : (
-            <p style={{ fontSize: '0.9em', color: '#999', marginTop: '10px' }}>
+            <p
+              style={{
+                fontSize: '0.9em',
+                color: '#999',
+                marginTop: '10px',
+              }}
+            >
               {hobbySearch ? 'No hobbies found' : 'No hobbies yet'}
             </p>
           )}
