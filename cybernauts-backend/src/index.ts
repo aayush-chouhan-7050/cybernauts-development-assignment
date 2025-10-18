@@ -15,39 +15,11 @@ const PORT = process.env.PORT || 3000;
 const DB_URL = process.env.DB_URL;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN_URL;
 
-// CORS options - FIXED VERSION
-const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps, Postman, curl)
-    if (!origin) return callback(null, true);
-    
-    // List of allowed origins
-    const allowedOrigins = [
-      FRONTEND_ORIGIN,
-      'https://cybernauts-development-assignment.vercel.app',
-      /^https:\/\/cybernauts-development-assignment-.*\.vercel\.app$/  // Vercel preview deployments
-    ];
-
-    // Check if origin matches any allowed pattern
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin instanceof RegExp) {
-        return allowedOrigin.test(origin);
-      }
-      return allowedOrigin === origin;
-    });
-
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.log(`CORS blocked origin: ${origin}`);
-      callback(null, false); // Changed from throwing error to just returning false
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
+// CORS options
+const corsOptions = {
+  origin: FRONTEND_ORIGIN
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
 
 // Middleware to parse JSON bodies
