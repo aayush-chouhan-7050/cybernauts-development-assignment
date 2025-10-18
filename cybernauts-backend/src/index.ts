@@ -1,4 +1,4 @@
-// src/index.ts - Updated with pagination routes
+// src/index.ts - Updated with Redis integration
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -8,6 +8,13 @@ import userRoutes from './routes/user.routes';
 import { handleGetGraphData } from './controllers/user.controller';
 import cluster from 'cluster';
 import os from 'os';
+import {
+  initRedis,
+  closeRedis,
+  subscribeToEvents,
+  CHANNELS,
+  isRedisAvailable,
+} from './config/redis';
 
 dotenv.config();
 
@@ -15,13 +22,15 @@ const numCPUs = os.cpus().length;
 
 if (cluster.isPrimary) {
   console.log(`Primary ${process.pid} is running`);
+  console.log(`Forking ${numCPUs} workers...`);
 
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} died`);
+    console.log(`Worker ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
   });
 } else {
   const app = express();
@@ -38,13 +47,24 @@ if (cluster.isPrimary) {
 
   // API Routes
   app.use('/api/users', userRoutes);
-  
-  // Graph endpoint with pagination support
   app.get('/api/graph', handleGetGraphData);
 
-  // Health check
+  // Health check with Redis status
   app.get('/', (req, res) => {
-    res.send('API is running...');
+    res.json({
+      status: 'API is running',
+      worker: process.pid,
+      redis: isRedisAvailable() ? 'connected' : 'disabled',
+    });
+  });
+
+  // Redis status endpoint
+  app.get('/api/status', (req, res) => {
+    res.json({
+      worker: process.pid,
+      redis: isRedisAvailable(),
+      uptime: process.uptime(),
+    });
   });
 
   if (!DB_URL) {
@@ -52,17 +72,46 @@ if (cluster.isPrimary) {
     process.exit(1);
   }
 
-  mongoose
-    .connect(DB_URL)
-    .then(() => {
-      console.log('Successfully connected to MongoDB.');
+  // Initialize everything
+  const startServer = async () => {
+    try {
+      // Connect to MongoDB
+      await mongoose.connect(DB_URL);
+      console.log(`Worker ${process.pid}: MongoDB connected`);
+
+      // Initialize Redis
+      await initRedis();
+
+      // Setup event listeners for state synchronization
+      if (isRedisAvailable()) {
+        await subscribeToEvents((channel, data) => {
+          console.log(
+            `Worker ${process.pid} received event on ${channel}:`,
+            data
+          );
+          // Events are handled in services, this is just for monitoring
+        });
+      }
+
+      // Start server
       app.listen(PORT, () => {
         console.log(
-          `Worker ${process.pid} started, server is running on port ${PORT}`
+          `Worker ${process.pid} started on port ${PORT}`
         );
       });
-    })
-    .catch((error) => {
-      console.error('Error connecting to MongoDB:', error);
-    });
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      process.exit(1);
+    }
+  };
+
+  startServer();
+
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log(`Worker ${process.pid} shutting down...`);
+    await closeRedis();
+    await mongoose.connection.close();
+    process.exit(0);
+  });
 }

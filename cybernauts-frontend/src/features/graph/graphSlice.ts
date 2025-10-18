@@ -5,13 +5,6 @@ import type { Node, Edge } from 'reactflow';
 import apiClient from '../../services/api';
 import { toast } from 'react-toastify';
 
-interface NodeData {
-  label: string;
-  age: number;
-  hobbies: string[];
-  popularityScore: number;
-}
-
 interface Pagination {
   page: number;
   limit: number;
