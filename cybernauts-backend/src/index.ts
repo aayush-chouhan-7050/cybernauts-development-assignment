@@ -19,6 +19,8 @@ const corsOptions = {
   origin: FRONTEND_ORIGIN
 };
 
+app.use(cors(corsOptions));
+
 // Middleware to parse JSON bodies
 app.use(express.json());
 
