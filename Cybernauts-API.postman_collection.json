@@ -1,0 +1,728 @@
+{
+  "info": {
+    "_postman_id": "cybernauts-user-network-api",
+    "name": "Cybernauts User Network API",
+    "description": "Complete API collection for the Interactive User Relationship & Hobby Network application. Includes all CRUD operations, relationship management, and graph data endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Retrieves all users in the system with their complete information including friends and hobbies."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"username\": \"Alice\",\n    \"age\": 25,\n    \"hobbies\": [\"coding\", \"music\"],\n    \"friends\": [\"550e8400-e29b-41d4-a716-446655440001\"],\n    \"createdAt\": \"2025-01-15T10:30:00.000Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has user ID\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('_id');",
+                  "    pm.environment.set(\"userId\", jsonData._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"Alice\",\n  \"age\": 25,\n  \"hobbies\": [\"coding\", \"music\", \"reading\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Creates a new user with username, age, and hobbies. All fields are required."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 26,\n  \"hobbies\": [\"coding\", \"music\", \"photography\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Updates an existing user's information. All fields are optional."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (Success)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Deletes a user. Will only succeed if the user has no friends. Otherwise returns 409 Conflict."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (With Friends - Should Fail)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Attempts to delete a user who has friends. Should return 409 Conflict with message about unlinking first."
+          },
+          "response": [
+            {
+              "name": "409 Conflict Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/users/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{userId}}"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"User cannot be deleted while they have friends. Please unlink them first.\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Endpoints for managing users - CRUD operations"
+    },
+    {
+      "name": "Relationships",
+      "item": [
+        {
+          "name": "Link Users (Create Friendship)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Success message returned\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('linked');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"friendId\": \"{{friendId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/link",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "link"
+              ]
+            },
+            "description": "Creates a mutual friendship between two users. Both users will have each other in their friends list."
+          },
+          "response": []
+        },
+        {
+          "name": "Unlink Users (Remove Friendship)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"friendId\": \"{{friendId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/unlink",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "unlink"
+              ]
+            },
+            "description": "Removes a friendship between two users. Both users will have each other removed from their friends list."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints for managing user relationships (friendships)"
+    },
+    {
+      "name": "Graph Data",
+      "item": [
+        {
+          "name": "Get Graph Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/graph",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graph"
+              ]
+            },
+            "description": "Returns formatted data for React Flow visualization including nodes (users) and edges (friendships) with calculated popularity scores."
+          },
+          "response": [
+            {
+              "name": "Graph Data Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/graph",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "graph"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"nodes\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"type\": \"highScoreNode\",\n      \"data\": {\n        \"label\": \"Alice\",\n        \"age\": 25,\n        \"hobbies\": [\"coding\", \"music\"],\n        \"popularityScore\": 3.5\n      },\n      \"position\": {\n        \"x\": 150,\n        \"y\": 200\n      }\n    }\n  ],\n  \"edges\": [\n    {\n      \"id\": \"e-550e8400-e29b-41d4-a716-446655440000-550e8400-e29b-41d4-a716-446655440001\",\n      \"source\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"target\": \"550e8400-e29b-41d4-a716-446655440001\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Endpoint for retrieving graph visualization data"
+    },
+    {
+      "name": "Test Scenarios",
+      "item": [
+        {
+          "name": "Complete User Flow",
+          "item": [
+            {
+              "name": "1. Create User Alice",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"User created successfully\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.environment.set(\"aliceId\", jsonData._id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"Alice\",\n  \"age\": 25,\n  \"hobbies\": [\"coding\", \"music\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "2. Create User Bob",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"User created successfully\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.environment.set(\"bobId\", jsonData._id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"Bob\",\n  \"age\": 30,\n  \"hobbies\": [\"coding\", \"sports\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "3. Link Alice and Bob",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"friendId\": \"{{bobId}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/{{aliceId}}/link",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{aliceId}}",
+                    "link"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "4. Get Graph Data",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Graph has nodes and edges\", function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.nodes).to.be.an('array');",
+                      "    pm.expect(jsonData.edges).to.be.an('array');",
+                      "    pm.expect(jsonData.nodes.length).to.be.at.least(2);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/graph",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "graph"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "5. Try Delete Alice (Should Fail)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Delete blocked due to friends\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.message).to.include('friends');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/users/{{aliceId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{aliceId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "6. Unlink Alice and Bob",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"friendId\": \"{{bobId}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/{{aliceId}}/unlink",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{aliceId}}",
+                    "unlink"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "7. Delete Alice (Should Succeed)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"User deleted successfully\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/users/{{aliceId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{aliceId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Popularity Score Test",
+          "item": [
+            {
+              "name": "Create User with Many Hobbies",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "pm.environment.set(\"testUserId\", jsonData._id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"Charlie\",\n  \"age\": 28,\n  \"hobbies\": [\"coding\", \"music\", \"art\", \"cooking\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Link to Multiple Users",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"friendId\": \"{{bobId}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/{{testUserId}}/link",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{testUserId}}",
+                    "link"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Verify Popularity Score",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Popularity score calculated correctly\", function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    var charlieNode = jsonData.nodes.find(n => n.data.label === 'Charlie');",
+                      "    pm.expect(charlieNode).to.exist;",
+                      "    pm.expect(charlieNode.data.popularityScore).to.be.above(0);",
+                      "    console.log('Charlie\\'s popularity score:', charlieNode.data.popularityScore);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/graph",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "graph"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Pre-configured test scenarios to validate complete workflows"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "friendId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "aliceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bobId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testUserId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

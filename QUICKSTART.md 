@@ -1,0 +1,342 @@
+# 🚀 Quick Start Guide
+
+Get up and running in 5 minutes!
+
+## Prerequisites
+- Node.js 18+ installed
+- MongoDB Atlas account (free tier)
+- Git installed
+
+---
+
+## Step 1: Clone & Install (2 minutes)
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/cybernauts-assignment.git
+cd cybernauts-assignment
+
+# Install backend dependencies
+cd cybernauts-backend
+npm install
+
+# Install frontend dependencies
+cd ../cybernauts-frontend
+npm install
+```
+
+---
+
+## Step 2: Setup Environment Variables (2 minutes)
+
+### Backend (.env)
+```bash
+cd cybernauts-backend
+cp .env.example .env
+```
+
+Edit `.env`:
+```env
+PORT=3001
+DB_URL=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/cybernauts?retryWrites=true&w=majority
+```
+
+**Get your MongoDB URL:**
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com)
+2. Click "Connect" → "Connect your application"
+3. Copy connection string
+4. Replace `<password>` with your password
+5. Replace `<database>` with `cybernauts`
+
+### Frontend (.env)
+```bash
+cd cybernauts-frontend
+cp .env.example .env
+```
+
+Edit `.env`:
+```env
+VITE_API_URL=http://localhost:3001/api
+```
+
+---
+
+## Step 3: Run the Application (1 minute)
+
+Open **2 terminal windows**:
+
+### Terminal 1 - Backend
+```bash
+cd cybernauts-backend
+npm run dev
+```
+
+✅ You should see:
+```
+Server is running on http://localhost:3001
+Successfully connected to MongoDB.
+```
+
+### Terminal 2 - Frontend
+```bash
+cd cybernauts-frontend
+npm run dev
+```
+
+✅ You should see:
+```
+VITE v7.x.x  ready in xxx ms
+
+➜  Local:   http://localhost:5173/
+```
+
+---
+
+## Step 4: Test It! (30 seconds)
+
+1. Open browser: `http://localhost:5173`
+2. Create a user:
+   - Username: "Alice"
+   - Age: 25
+   - Hobbies: "coding, music"
+3. Create another user: "Bob", age 30, hobbies "coding, sports"
+4. Drag from Alice to Bob to link them
+5. See the graph update with connected nodes!
+
+---
+
+## 🎉 That's it!
+
+You're now running the full application locally.
+
+### Next Steps:
+- Read the full [README.md](./README.md) for detailed features
+- Check [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for API details
+- Run tests: `cd cybernauts-backend && npm test`
+- Deploy following [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
+## 🐛 Troubleshooting
+
+### "Cannot connect to MongoDB"
+**Problem:** Backend can't connect to database  
+**Solution:**
+1. Check your MongoDB Atlas cluster is running
+2. Verify DB_URL in `.env` is correct
+3. Ensure IP whitelist includes `0.0.0.0/0` (allow all)
+4. Check username/password are correct
+
+### "Port 3001 already in use"
+**Problem:** Another process is using port 3001  
+**Solution:**
+```bash
+# Find and kill the process (Mac/Linux)
+lsof -ti:3001 | xargs kill -9
+
+# Or change the port in backend/.env
+PORT=3002
+```
+
+### "Module not found" errors
+**Problem:** Dependencies not installed  
+**Solution:**
+```bash
+# Re-install dependencies
+cd cybernauts-backend
+rm -rf node_modules package-lock.json
+npm install
+
+cd cybernauts-frontend
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### "Network Error" in frontend
+**Problem:** Frontend can't reach backend  
+**Solution:**
+1. Check backend is running (`http://localhost:3001`)
+2. Verify `VITE_API_URL` in frontend `.env`
+3. Check browser console for CORS errors
+4. Restart both backend and frontend
+
+### "VITE_API_URL is not defined"
+**Problem:** Environment variable not loading  
+**Solution:**
+1. Ensure `.env` file exists in frontend folder
+2. Variable must start with `VITE_`
+3. Restart the dev server after changing .env
+4. Check there's no typo in the variable name
+
+---
+
+## 📝 Common Commands
+
+### Backend
+```bash
+# Development mode (hot reload)
+npm run dev
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+### Frontend
+```bash
+# Development mode
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run linter
+npm run lint
+```
+
+---
+
+## 🎯 Features to Try
+
+1. **Create Users**
+   - Fill the form in the sidebar
+   - Try different ages and hobbies
+   - Notice toast notification
+
+2. **Link Users**
+   - Drag from one node's handle to another
+   - Or use React Flow's connection handles
+   - See the edge appear
+
+3. **Manage Hobbies**
+   - Search hobbies in sidebar
+   - Drag a hobby onto a user node
+   - Watch popularity score update
+
+4. **Delete Protection**
+   - Try to delete a user with friends
+   - See the 409 error message
+   - Unlink first, then delete
+
+5. **Custom Node Types**
+   - Create a user and link them to multiple others
+   - Watch the node change color when score > 5
+   - Notice the smooth transition
+
+6. **Graph Controls**
+   - Use zoom controls (bottom right)
+   - Pan by dragging the canvas
+   - Use minimap for navigation
+   - Fit view button to center graph
+
+---
+
+## 🔑 Key Files to Explore
+
+### Backend
+```
+src/
+├── controllers/user.controller.ts    # API request handlers
+├── services/user.service.ts          # Business logic & scoring
+├── models/user.model.ts              # MongoDB schema
+├── routes/user.routes.ts             # API routes
+└── tests/user.logic.test.ts          # Unit tests
+```
+
+### Frontend
+```
+src/
+├── components/NetworkGraph.tsx       # React Flow graph
+├── components/Sidebar.tsx            # User management UI
+├── components/nodes/                 # Custom node components
+├── features/graph/graphSlice.ts      # Redux state
+└── services/api.ts                   # API client
+```
+
+---
+
+## 💡 Pro Tips
+
+1. **Keep MongoDB Atlas Free:**
+   - Free tier gives 512MB storage
+   - Perfect for development
+   - Clusters pause after inactivity (auto-resumes)
+
+2. **Development Workflow:**
+   - Keep both terminals visible
+   - Use browser DevTools → Network tab to debug API calls
+   - Check backend terminal for API logs
+   - Use Redux DevTools extension
+
+3. **Testing:**
+   - Run tests before committing: `npm test`
+   - Check test coverage
+   - Add new tests for new features
+
+4. **Git Workflow:**
+   ```bash
+   # Create feature branch
+   git checkout -b feature/your-feature
+   
+   # Commit changes
+   git add .
+   git commit -m "Add: your feature description"
+   
+   # Push to GitHub
+   git push origin feature/your-feature
+   ```
+
+5. **Code Quality:**
+   - Run ESLint: `npm run lint`
+   - Format code consistently
+   - Remove console.logs before committing
+   - Use TypeScript types (avoid `any`)
+
+---
+
+## 📦 What's Included
+
+### Backend Features ✅
+- Express.js REST API
+- MongoDB with Mongoose ODM
+- TypeScript for type safety
+- UUID for user IDs
+- Jest testing framework
+- Nodemon for hot reload
+- CORS enabled
+- Error handling middleware
+- Validation logic
+
+### Frontend Features ✅
+- React 19 with TypeScript
+- Redux Toolkit for state
+- React Flow for visualization
+- React Toastify for notifications
+- Custom node components
+- Drag-and-drop hobbies
+- Debounced search
+- Error boundary
+- Loading states
+- Responsive design
+
+### Business Logic ✅
+- Popularity score calculation
+- Mutual friendships
+- Delete protection
+- Circular reference prevention
+- Real-time score updates
+- Shared hobby tracking
+
+---
+
+## ✨ You're All Set!
+
+The application is now running locally. Time to explore, test, and deploy!
