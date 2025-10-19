@@ -519,38 +519,7 @@ npm run test:all
 
 ## 🎥 Screen Recording
 
-**Status**: ⚠️ To be added
-
-### What to Include in Recording:
-
-1. **Live Demo Walkthrough** (5-7 minutes)
-   - Show deployed application
-   - Create users
-   - Link/unlink users
-   - Drag hobbies onto nodes
-   - Show real-time score updates
-   - Demonstrate delete protection (409 error)
-   - Toggle lazy loading
-   - Show undo/redo functionality
-
-2. **Code Structure** (2-3 minutes)
-   - Backend architecture
-   - Frontend components
-   - Redis implementation
-   - Test coverage
-
-3. **Bonus Features** (2-3 minutes)
-   - Clustering demonstration
-   - Redis state synchronization
-   - Custom node types
-   - Performance optimization
-
-**Recommended Tools:**
-- OBS Studio (Free)
-- Loom (Easy)
-- QuickTime (macOS)
-
-**Upload the recording and add the link here.**
+**Watch the Full Demo:** [Cybernauts Assignment Walkthrough](https://www.youtube.com/watch?v=jbe_gySXAAY)
 
 ---
 

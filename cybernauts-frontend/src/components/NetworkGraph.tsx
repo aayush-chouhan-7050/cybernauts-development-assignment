@@ -23,6 +23,7 @@ import {
   loadMoreGraphData,
   toggleLazyLoad,
 } from '../features/graph/graphSlice';
+import { toast } from 'react-toastify';
 import HighScoreNode from './nodes/HighScoreNode';
 import LowScoreNode from './nodes/LowScoreNode';
 import './NetworkGraph.css';
@@ -39,6 +40,7 @@ const NetworkGraph = () => {
   );
   
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [selectedEdgeIds, setSelectedEdgeIds] = useState<string[]>([]);
   const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,7 +60,6 @@ const NetworkGraph = () => {
       const { scrollTop, scrollHeight, clientHeight } = viewport;
       const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
 
-      // Load more when scrolled 80% down
       if (scrollPercentage > 0.8) {
         setIsLoadingMore(true);
         await dispatch(loadMoreGraphData());
@@ -72,6 +73,80 @@ const NetworkGraph = () => {
       return () => viewport.removeEventListener('scroll', handleScroll);
     }
   }, [isLazyLoadEnabled, isLoadingMore, pagination.hasMore, dispatch]);
+
+  // Custom keyboard handler for node and edge deletion
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        const selectedNodes = nodes.filter(node => node.selected);
+        
+        console.log('Selected nodes:', selectedNodes.length);
+        console.log('Selected edge IDs:', selectedEdgeIds.length);
+        
+        // Handle edge deletion first (using our tracked selected edges)
+        if (selectedEdgeIds.length > 0) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          const isConfirmed = window.confirm(
+            `Are you sure you want to unlink ${selectedEdgeIds.length} friendship(s)?`
+          );
+
+          if (isConfirmed) {
+            selectedEdgeIds.forEach((edgeId) => {
+              const edge = edges.find(e => e.id === edgeId);
+              if (edge) {
+                dispatch(unlinkUsers({ source: edge.source, target: edge.target }));
+              }
+            });
+            // Clear selected edges after deletion
+            setSelectedEdgeIds([]);
+          }
+          return; // Don't process nodes if edges were selected
+        }
+        
+        // Handle node deletion (if nodes are selected)
+        if (selectedNodes.length > 0) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          // Check if any selected node has friends (connected edges)
+          const nodesWithFriends = selectedNodes.filter(node => {
+            const connectedEdges = edges.filter(
+              edge => edge.source === node.id || edge.target === node.id
+            );
+            return connectedEdges.length > 0;
+          });
+
+          // If any node has friends, show error and block deletion
+          if (nodesWithFriends.length > 0) {
+            const nodeNames = nodesWithFriends.map(n => n.data.label).join(', ');
+            toast.error(
+              `Cannot delete ${nodeNames}. User has active friendships. Unlink them first!`,
+              { autoClose: 4000 }
+            );
+            return;
+          }
+
+          // Only show confirmation if user has NO friends
+          const isConfirmed = window.confirm(
+            `Are you sure you want to delete ${selectedNodes.length} user(s)? This cannot be undone.`
+          );
+
+          if (isConfirmed) {
+            selectedNodes.forEach((node) => {
+              dispatch(deleteUser(node.id));
+            });
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [nodes, edges, selectedEdgeIds, dispatch]);
 
   const handleConnect = useCallback(
     (params: Connection) => {
@@ -115,25 +190,23 @@ const NetworkGraph = () => {
   );
 
   const onNodesDelete = useCallback(
-    (deletedNodes: Node[]) => {
-      const isConfirmed = window.confirm(
-        `Are you sure you want to delete ${deletedNodes.length} user(s)? This cannot be undone.`
-      );
-
-      if (isConfirmed) {
-        deletedNodes.forEach((node) => {
-          dispatch(deleteUser(node.id));
-        });
-      }
+    () => {
+      // Disabled - handled by custom keyboard listener
     },
-    [dispatch]
+    []
   );
 
   const onEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
-      deletedEdges.forEach((edge) => {
-        dispatch(unlinkUsers({ source: edge.source, target: edge.target }));
-      });
+      const isConfirmed = window.confirm(
+        `Are you sure you want to unlink ${deletedEdges.length} friendship(s)?`
+      );
+
+      if (isConfirmed) {
+        deletedEdges.forEach((edge) => {
+          dispatch(unlinkUsers({ source: edge.source, target: edge.target }));
+        });
+      }
     },
     [dispatch]
   );
@@ -155,6 +228,29 @@ const NetworkGraph = () => {
       });
     },
     [dispatch, nodes]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes: any[]) => {
+      // Track edge selection changes
+      changes.forEach((change) => {
+        if (change.type === 'select') {
+          if (change.selected) {
+            // Edge is being selected
+            setSelectedEdgeIds(prev => {
+              if (!prev.includes(change.id)) {
+                return [...prev, change.id];
+              }
+              return prev;
+            });
+          } else {
+            // Edge is being deselected
+            setSelectedEdgeIds(prev => prev.filter(id => id !== change.id));
+          }
+        }
+      });
+    },
+    []
   );
 
   const onNodeClick = useCallback(
@@ -191,12 +287,14 @@ const NetworkGraph = () => {
         edges={edges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         onConnect={handleConnect}
         onNodesDelete={onNodesDelete}
         onDrop={onDrop}
         onDragOver={onDragOver}
         onEdgesDelete={onEdgesDelete}
         onNodeClick={onNodeClick}
+        deleteKeyCode={null}
         fitView
       >
         <MiniMap />
