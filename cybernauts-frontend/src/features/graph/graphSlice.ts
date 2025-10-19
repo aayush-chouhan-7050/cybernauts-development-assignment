@@ -1,4 +1,4 @@
-// src/features/graph/graphSlice.ts - Add lazy loading support
+// src/features/graph/graphSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Node, Edge } from 'reactflow';
@@ -17,17 +17,19 @@ interface GraphState {
   nodes: Node[];
   edges: Edge[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  mutationStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
   selectedNodeId: string | null;
   pagination: Pagination;
   isLazyLoadEnabled: boolean;
-  loadedPages: number[]; // Changed from Set to Array for Redux serialization
+  loadedPages: number[]; 
 }
 
 const initialState: GraphState = {
   nodes: [],
   edges: [],
   status: 'idle',
+  mutationStatus: 'idle',
   error: null,
   selectedNodeId: null,
   pagination: {
@@ -38,7 +40,7 @@ const initialState: GraphState = {
     hasMore: false
   },
   isLazyLoadEnabled: false,
-  loadedPages: [1] // Changed from Set to Array
+  loadedPages: [1] 
 };
 
 // Fetch graph data with pagination support
@@ -60,7 +62,6 @@ export const fetchGraphData = createAsyncThunk(
   }
 );
 
-// NEW: Load more graph data (pagination)
 export const loadMoreGraphData = createAsyncThunk(
   'graph/loadMore',
   async (_, { getState }) => {
@@ -89,15 +90,13 @@ export const loadMoreGraphData = createAsyncThunk(
   }
 );
 
-// NEW: Toggle lazy loading mode
+
 export const toggleLazyLoad = createAsyncThunk(
   'graph/toggleLazyLoad',
   async (enable: boolean, { dispatch }) => {
     if (enable) {
-      // Load first page with smaller batch
       await dispatch(fetchGraphData({ page: 1, limit: 50 }));
     } else {
-      // Load all data
       await dispatch(fetchGraphData({ page: 1, limit: 1000 }));
     }
     return enable;
@@ -314,7 +313,7 @@ const graphSlice = createSlice({
       })
       .addCase(toggleLazyLoad.fulfilled, (state, action) => {
         state.isLazyLoadEnabled = action.payload;
-        state.loadedPages = [1]; // Reset to array with just page 1
+        state.loadedPages = [1];
       })
       .addCase(createUser.fulfilled, () => {
         toast.success('User created successfully!');

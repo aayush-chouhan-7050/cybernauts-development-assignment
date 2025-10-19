@@ -1,4 +1,4 @@
-// src/components/NetworkGraph.tsx - Add lazy loading and virtualization
+// src/components/NetworkGraph.tsx
 import { useEffect, useCallback, useState, useRef } from 'react';
 import ReactFlow, {
   MiniMap,
@@ -27,7 +27,6 @@ import HighScoreNode from './nodes/HighScoreNode';
 import LowScoreNode from './nodes/LowScoreNode';
 import './NetworkGraph.css';
 
-// Define nodeTypes outside component to prevent re-creation on each render
 const nodeTypes = {
   highScoreNode: HighScoreNode,
   lowScoreNode: LowScoreNode,

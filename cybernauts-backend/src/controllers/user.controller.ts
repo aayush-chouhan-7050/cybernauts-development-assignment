@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import * as userService from '../services/user.service';
 import { ConflictError } from '../utils/errors';
 
-// Existing handlers...
 export const handleCreateUser = async (req: Request, res: Response) => {
   try {
     const user = await userService.createUser(req.body);
@@ -22,7 +21,6 @@ export const handleGetAllUsers = async (req: Request, res: Response) => {
   }
 };
 
-// NEW: Paginated users endpoint
 export const handleGetPaginatedUsers = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -97,7 +95,7 @@ export const handleUnlinkUsers = async (req: Request, res: Response) => {
     }
 };
 
-// NEW: Paginated graph data endpoint
+
 export const handleGetGraphData = async (req: Request, res: Response) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
@@ -111,7 +109,7 @@ export const handleGetGraphData = async (req: Request, res: Response) => {
     }
 };
 
-// NEW: Get user stats for dashboard
+
 export const handleGetUserStats = async (req: Request, res: Response) => {
     try {
         const stats = await userService.getUserStats();

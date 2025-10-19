@@ -19,7 +19,7 @@ interface IPagination {
 }
 
 interface IGraphData {
-  nodes: any[]; // You can create a more specific INode interface if needed
+  nodes: any[];
   edges: { id: string; source: string; target: string }[];
   pagination: IPagination;
 }

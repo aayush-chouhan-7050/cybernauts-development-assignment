@@ -19,7 +19,7 @@ export const CHANNELS = {
 };
 
 // Initialize Redis clients
-export const initRedis = async (): Promise<void> => { // Fixed
+export const initRedis = async (): Promise<void> => {
   if (!REDIS_ENABLED) {
     console.log('⚠️  Redis is disabled. State will not be synchronized across workers.');
     return;
@@ -75,7 +75,7 @@ export const initRedis = async (): Promise<void> => { // Fixed
 };
 
 // Close Redis connections
-export const closeRedis = async (): Promise<void> => { // Fixed
+export const closeRedis = async (): Promise<void> => {
   if (redisClient) await redisClient.quit();
   if (redisPubClient) await redisPubClient.quit();
   if (redisSubClient) await redisSubClient.quit();
@@ -96,7 +96,7 @@ export const isRedisAvailable = (): boolean => {
 export const publishEvent = async (
   channel: string,
   data: any
-): Promise<void> => { // Fixed
+): Promise<void> => {
   if (!isRedisAvailable() || !redisPubClient) return;
 
   try {
@@ -109,7 +109,7 @@ export const publishEvent = async (
 // Subscribe to events
 export const subscribeToEvents = async (
   callback: (channel: string, message: any) => void
-): Promise<void> => { // Fixed
+): Promise<void> => { 
   if (!isRedisAvailable() || !redisSubClient) return;
 
   // Subscribe to all channels
@@ -130,7 +130,7 @@ export const cacheSet = async (
   key: string,
   value: any,
   ttlSeconds: number = 300
-): Promise<void> => { // Fixed
+): Promise<void> => { 
   if (!isRedisAvailable() || !redisClient) return;
 
   try {
@@ -140,7 +140,7 @@ export const cacheSet = async (
   }
 };
 
-export const cacheGet = async (key: string): Promise<any | null> => { // Fixed
+export const cacheGet = async (key: string): Promise<any | null> => { 
   if (!isRedisAvailable() || !redisClient) return null;
 
   try {
@@ -152,7 +152,7 @@ export const cacheGet = async (key: string): Promise<any | null> => { // Fixed
   }
 };
 
-export const cacheDelete = async (key: string): Promise<void> => { // Fixed
+export const cacheDelete = async (key: string): Promise<void> => {
   if (!isRedisAvailable() || !redisClient) return;
 
   try {
@@ -164,7 +164,7 @@ export const cacheDelete = async (key: string): Promise<void> => { // Fixed
 
 export const cacheInvalidatePattern = async (
   pattern: string
-): Promise<void> => { // Fixed
+): Promise<void> => {
   if (!isRedisAvailable() || !redisClient) return;
 
   try {

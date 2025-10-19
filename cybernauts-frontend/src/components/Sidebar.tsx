@@ -13,9 +13,9 @@ import './Sidebar.css';
 
 const Sidebar = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { nodes, selectedNodeId } = useSelector(
+  const { nodes, selectedNodeId, mutationStatus } = useSelector(
     (state: RootState) => state.graph.present
-  ); // Update selector
+  );
   const canUndo = useSelector((state: RootState) => state.graph.past.length > 0);
   const canRedo = useSelector(
     (state: RootState) => state.graph.future.length > 0
@@ -26,6 +26,7 @@ const Sidebar = () => {
   const [hobbySearch, setHobbySearch] = useState('');
 
   const isEditMode = useMemo(() => !!selectedNodeId, [selectedNodeId]);
+  const isLoading = mutationStatus === 'loading';
 
   useEffect(() => {
     if (selectedNodeId) {
@@ -152,7 +153,9 @@ const Sidebar = () => {
           value={hobbies}
           onChange={(e) => setHobbies(e.target.value)}
         />
-        <button type="submit">{isEditMode ? 'Update User' : 'Create User'}</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Saving...' : (isEditMode ? 'Update User' : 'Create User')}
+        </button>
         {isEditMode && (
           <button type="button" onClick={handleCancelEdit}>
             Cancel Edit
