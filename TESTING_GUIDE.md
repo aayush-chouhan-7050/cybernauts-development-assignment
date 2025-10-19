@@ -633,5 +633,3 @@ kill -9 $(lsof -ti:3001)
 - [MongoDB Testing Guide](https://www.mongodb.com/docs/manual/reference/testing/)
 
 ---
-
-**Last Updated**: January 2025
